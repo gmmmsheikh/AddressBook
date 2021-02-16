@@ -1,0 +1,56 @@
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class AddressBook {
+	
+	public ArrayList<Contact> contacts = new ArrayList<Contact>();
+	
+	
+	//creates file
+	public static void createFile(String fileName) {
+	    try {
+	        File file = new File(fileName);
+	        if (!file.exists()) {
+	            file.createNewFile();
+	        } else {
+	            FileOutputStream writer = new FileOutputStream(fileName);
+	            writer.write(("").getBytes());
+	            writer.close();
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	//1. Add a new contact 
+	public void addContact(Contact person) {
+		contacts.add(person);
+	}
+
+	//2. Update an existing contact
+	public void updateContactByName() {
+		
+	}
+	
+	public void updateContactByNumber() {
+		
+	}
+	
+	public void updateContactByAddress(String oldAddress, String newAddress) {
+		
+	}
+
+	//3. Delete a contact
+
+	//4. List all added contacts in sorted order
+
+	//5. Search for a given contact. Search can be done by first name, last name, or phone number. Return all the details upon finding a match.
+
+	//6. Quit
+	
+	
+	
+	
+}
