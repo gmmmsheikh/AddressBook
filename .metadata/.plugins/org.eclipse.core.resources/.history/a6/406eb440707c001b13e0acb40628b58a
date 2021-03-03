@@ -1,0 +1,461 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+public class AddressBook {
+	
+	
+	
+	private static ArrayList<Contact> addressBook = new ArrayList<>();
+	static Scanner sc = new Scanner(System.in);
+
+
+	//creates file
+	public static void createFile(String fileName) {
+	    try {
+	        File file = new File(fileName);
+	        if (!file.exists()) {
+	            file.createNewFile();
+	        } else {
+	            FileOutputStream writer = new FileOutputStream(fileName);
+	            writer.write(("").getBytes());
+	            writer.close();
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+	// reads file into array list that will be used to manipulate data while program is running
+	public static void readFile(String fileName)throws FileNotFoundException{
+		
+	    try(BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+	        String line = br.readLine();
+	        while(line != null) {
+	        	String[] metadata = line.split(",");
+	        	addressBook.add(new Contact(metadata[0], metadata[1], metadata[2], 
+	    				metadata[3]));
+	        	line = br.readLine();
+	        }
+	        
+	    } catch (IOException e) {
+	      System.out.println("SOMETHINGS IS MESSED UP, OOPS!");
+	    }
+	}
+	
+	// returns index of desired contact
+		public int search() throws IOException {
+			
+			if(addressBook.isEmpty()) throw new IOException("Address Book is EMPTY\n");
+			
+			System.out.println("This search will return the first instance of the search parameter inputed.\n"
+					+ "If this is the wrong contact, please try again.");
+			
+			String willCheckCurrent;
+			int index = -1;
+			String number;
+			try {
+				System.out.println(" To check current list for reference, enter any key. Otherwise, enter 'no'. ");			
+				willCheckCurrent = sc.nextLine();
+			
+				if(willCheckCurrent.equals("no")) {/* do nothing */}
+				else {
+					System.out.println(willCheckCurrent);
+					listAddressBook(); //display the current address book for reference
+				}
+			}catch(InputMismatchException e) {System.out.println(e);}	
+				boolean searchPending = true;
+				while(searchPending) {
+					try {
+						System.out.println("Please enter a number (1-3) to choose how you would like to search:\n"
+								+ "1. First Name\n"
+								+ "2. Last Name\n"
+								+ "3. Phone Number\n");
+					
+					String searchType = sc.nextLine();
+					int convertedToInt = Integer.parseInt(searchType);
+					switch(convertedToInt) {
+					
+					// search by first name
+					case 1:
+						System.out.println("Please enter the FIRST name of the person you would like to find");
+						String fnSearch = sc.nextLine();
+						for(Contact c : addressBook) {
+							if(c.getFirstName().equalsIgnoreCase(fnSearch)) {
+								index = addressBook.indexOf(c);
+								System.out.println(index + " is the index");
+								c.toString();
+								break;
+								}
+						}
+						searchPending= false;
+						break;
+						
+					// search by last name	
+					case 2: 
+						System.out.println("Please enter the LAST name of the person you would like to find");
+						String lnSearch = sc.nextLine();
+						for(Contact c : addressBook) {
+							if(c.getFirstName().equalsIgnoreCase(lnSearch)) {
+								index = addressBook.indexOf(c);
+								c.toString();
+								break;
+								}
+						};
+						searchPending= false;
+						break;
+						
+					// search by phone number	
+					case 3: 
+						System.out.println("Please enter the 10 digit phone number of the person you would like to search");
+						number = sc.nextLine();
+						if (isValidPhoneNumber(number)) {
+							for(Contact c: addressBook) {
+								if (c.getPhoneNumber().equalsIgnoreCase(number)) {
+									index = addressBook.indexOf(c);
+									c.toString();
+									break;
+								}
+							}
+						}
+						searchPending= false;
+						break;
+						
+					// invalid input	
+					//default:
+						//throw new IOException("That was an invalid input");
+					}
+					
+					
+					}catch(InputMismatchException ioe){
+						System.out.println(ioe);
+					}catch(NumberFormatException e) {
+						System.out.println(e+"\nThat was an invalid input");
+					}
+				}
+				System.out.println(addressBook.get(index).toString());
+				if(searchVerification()==true) return index;
+				else {
+					System.out.println("You can try searching with another parameter next time");
+					return -1;
+				}
+		}
+		
+		// checks to see if the search was successful
+		public boolean searchVerification() throws IOException{
+			boolean verificationPending = true;
+			System.out.println("Was this the contact you were searching for? (yes/no)");
+			String yesOrNo;
+			try {
+				while(verificationPending) {	
+					yesOrNo = sc.nextLine();
+					if(yesOrNo.equals("no") || yesOrNo.equals("No")){
+						System.out.println("Incorrect input was chosen");
+						return false;
+					}else if(yesOrNo.equals("yes") || yesOrNo.equals("Yes")) {
+						System.out.println("Correct input was chosen");
+						return true;
+					}else {
+						System.out.println(yesOrNo);
+						throw new IOException("That was an invalid responce, try again (yes/no)");
+					}
+				}
+			}catch(IOException e) {System.out.println(e);}
+			System.out.println("something happened in searchVerification, returning true");
+			return true;
+		}
+		
+		// checks to see if phone number is valid
+		public boolean isValidPhoneNumber(String phoneNum) {
+			try {
+				@SuppressWarnings("unused")
+				int convertedToInt;
+				convertedToInt = Integer.parseInt(phoneNum);
+			}catch(NumberFormatException nfe) {
+				System.out.println(nfe + "\nMake sure to only include the 10 digit number ONLY. "
+						+ "\nNo dashes or any other extra characters.");
+				return false;
+			}
+			if(phoneNum.length() != 10) {
+				System.out.println("Invalid number entered. Please make sure to include only "
+						+ "the 10 digit phonenumber");
+				return false;
+			}
+			return true;
+		}
+		
+		// adds a contact to address book
+		public void addContact() {
+			try {
+				String firstName_, lastName_, address_, phonenumber_;
+				
+				System.out.println("Please enter the Contact's first name");
+				firstName_ = sc.nextLine();
+				
+				System.out.println("Please enter the Contact's last name");
+				lastName_ = sc.nextLine();
+				
+				System.out.println("Please enter the Contact's address");
+				address_ = sc.nextLine();
+				
+				System.out.println("Please enter the Contact's 10 digit phone number");
+				phonenumber_ = sc.nextLine();
+				if(phonenumber_.length() != 10) {
+					throw new IOException("This is not a valid phone number.\n"
+							+ "Please make sure to use a 10 digit phone number without any extra characters\n"
+							+ "e.g. 1234567890 NOT 123-456-7890");
+				}
+				addressBook.add(new Contact(firstName_, lastName_, address_, phonenumber_));
+			}catch(IOException ioe){
+				System.out.println(ioe);
+				}
+		}
+		
+		// updates address
+		@SuppressWarnings("finally")
+		public void updateContact() throws IOException {
+			int index = search();
+			if (index == -1) {
+				System.out.println("Index not found. Exiting update");
+				return;
+			}
+			boolean continueUpdate = true;
+			while(continueUpdate) {
+				System.out.println("Enter...\n"
+					+ "1 for first name\n"
+					+ "2 for last name\n"
+					+ "3 for address\n"
+					+ "4 for phone number\n"
+					+ "or any other key to quit update");
+				try {
+					String updateNumber = sc.nextLine();
+					
+					
+					switch(updateNumber) {
+						case("1"):
+							System.out.println("Please enter the new first name for this contact");
+						addressBook.get(index).setFirstName(sc.nextLine());
+							break;
+						case("2"):
+							System.out.println("Please enter the new last name for this contact");
+						addressBook.get(index).setLastName(sc.nextLine());
+							break;
+						case("3"):
+							System.out.println("Please enter the new address for this contact");
+						addressBook.get(index).setAddress(sc.nextLine());
+							break;
+						case("4"):
+							System.out.println("Please enter the new phone number for this contact");
+						addressBook.get(index).setPhoneNumber(sc.nextLine());
+							break;
+						default:
+							continueUpdate = false;
+							break;
+						}
+					
+					//br.close();
+				}catch(InputMismatchException ioe) {
+					System.out.println(ioe);
+					return;
+				}
+			}
+		}	
+
+		
+		// delete a specified contact
+		public void deleteContact() throws IOException {
+			if(addressBook.isEmpty()) {
+				System.out.println("What are you doing here? It's already empty!");
+				return;
+			}
+			try {
+				int index = search();
+				if (index == -1) {
+					System.out.println("Index not found. Exiting deletion");
+					return;
+				}
+				addressBook.remove(addressBook.get(index)); // removes contact at the index found by the search method
+				System.out.println("Successfully deleted contact");
+			} catch (IOException e) {
+				System.out.println(e);
+			} catch(Exception e) {System.out.println(e);}
+		}
+		
+		public void listAddressBook() {
+			if (addressBook.isEmpty()) {
+				System.out.println("Address Book Empty");
+				return;
+			}
+			 Collections.sort(addressBook); 
+			for (Contact c : addressBook) {
+				System.out.println(c.toString());
+			}
+		}
+		
+		
+		
+		public void mainMenu(AddressBook ab) {
+			try {
+				boolean continueProgram = true;
+				System.out.println("Address Book\n"
+						+ "___________\n"
+						+ "Type in a number (1-6) corresponding to a command listed below to do things\n");
+				while(continueProgram) {	
+					try {
+						System.out.println(""
+								+ "1   Add a New Contact\n"
+								+ "2   Update an Existing Contact\n"
+								+ "3   Delete a Contact\n"
+								+ "4   Search for a contact by last name\n"
+								+ "5   Save Address Book\n"
+								+ "6   List all Contacts\n"
+								+ "7   Quit");
+						String commandNumber = sc.nextLine();
+						
+						int convertedToInt = Integer.parseInt(commandNumber); // checks to see if input is a valid input, otherwise catch exception
+						
+						switch(convertedToInt) {
+						case 1: 
+							ab.addContact();
+							break;
+						case 2:
+							ab.updateContact();
+							break;
+						case 3:
+							ab.deleteContact();
+							break;
+						case 4:
+							ab.search();
+							System.out.println();
+							break;
+						case 5: 
+							ab.save();
+							break;
+						case 6:
+							ab.listAddressBook();
+							break;
+						case 7:
+							System.out.println("Quitting program, saving changes");
+							ab.save();
+							continueProgram = false;
+							break;
+						default:
+							throw new IOException("Invalid entry. Please ONLY enter a number (1-6)");
+						}
+						
+					}catch(IOException e) {
+						System.out.println(e);
+						break;
+					}catch(NumberFormatException nfe) {
+						System.out.println(nfe + "\nPlease ONLY enter a number (1-6)");
+						continue;
+					}
+				}
+				ab.close();
+			}catch(Exception e) {System.out.println(e);}
+		}
+	
+	//6. Saves items in array list into .CSV file
+	public static void save() {
+		// TODO
+		
+	}
+	
+	//7. Save and Quit
+	public static void quit() {
+		//TODO
+	}
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		ArrayList<Contact> contacts = new ArrayList<Contact>();
+		createFile("AddressBook.csv");
+		
+		
+		System.out.println("AddressBook.txt is loaded.\n"
+				+ "Please save and quit properly when you are done to avoid losing unsaved data!");
+		readFile("AddressBook.csv", contacts);
+		
+		System.out.println("Please Choose (1-7) from the following options: ");
+		System.out.println("-----------------------------------------");
+		boolean wantsToContinue = true;
+		
+		
+		while(wantsToContinue) {
+			
+			System.out.println(
+					 "1. Add a new contact\n"
+					+"2. Update an existing contact\n"
+					+"3. Delete a contact\n"
+					+"4. List all added contact in sorted order by first name\n"
+					+"5. Search for first instance of a contact by first name, last name, or phone number\n"
+					+"6. Save data\n"
+					+"7. Save and quit\n"
+			);
+			Scanner sc = new Scanner(System.in);
+			try {
+			
+				switch (sc.nextInt()) {
+					case 1:
+						contacts = addContact(contacts);
+						contacts.sort(Contact::compareTo); 
+						break;
+						
+					case 2:
+						//TODO
+						break;
+						
+					case 3:
+						System.out.println("Enter the first and last name of the contact");
+						try {
+							String firstName = sc.next();
+							String lastName = sc.next();
+							
+							contacts = deleteContact(firstName, lastName, contacts);
+							
+						}catch(Exception e) {
+							System.out.println(e.getMessage()+ "Failed to delete. Please try again");
+						}
+						break;
+						
+					case 4:
+						displayContacts(contacts);
+						break;
+						
+					case 5:
+						System.out.println("Choose (1) to search using first name, (2) for last name, or (3) by phone number:");
+						try {
+							System.out.println("Search Result: \n" + searchContact(sc.nextInt(), contacts));
+							
+						}catch (InputMismatchException e) {
+								System.out.println("Improper Input detected. Cancelling request.");
+							}
+							
+						
+						break;
+					case 6:
+						break;
+					case 7:
+						break;
+				
+				}
+			
+			}catch (InputMismatchException e) {
+				System.out.println("Improper Input detected, please try again and choose an option (1-7)");
+				
+			}
+			
+			
+			sc.close();
+		}
+		
+		
+	}
+	
+	
+}
